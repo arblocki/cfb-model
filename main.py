@@ -17,6 +17,7 @@ from cfbd.rest import ApiException
 import pandas
 
 apiKey = os.getenv('CFBD_API_KEY')
+logger.debug(f'Using API key: {apiKey}')
 configuration = cfbd.Configuration()
 configuration.api_key['Authorization'] = apiKey
 configuration.api_key_prefix['Authorization'] = 'Bearer'
@@ -28,7 +29,6 @@ statsApi = cfbd.StatsApi(apiClient)
 class PlayType(Enum):
     RUSH = 'rush'
     PASS = 'pass'
-    All = 'all'
 
 FIELD_NAMES = {
     PlayType.RUSH: {
@@ -50,7 +50,7 @@ def getYardsPerPlayByGame(team: str, gameId: int, year: int, type: PlayType) -> 
     except ApiException as e:
         logger.exception(e)
         return 0
-    logger.warning(gameStats)
+    # logger.warning(gameStats)
     
     if team == gameStats[0].teams[0]['school']:
         teamStatsList = gameStats[0].teams[0]['stats']
@@ -58,8 +58,9 @@ def getYardsPerPlayByGame(team: str, gameId: int, year: int, type: PlayType) -> 
         teamStatsList = gameStats[0].teams[1]['stats']
     statMap = {statObj['category']: statObj['stat'] for statObj in teamStatsList}
     logger.warning(statMap)
-
-    return 60
+    
+    fieldName = FIELD_NAMES[type]['yardsPerPlay']
+    return float(statMap[fieldName])
     
 
 
